@@ -1,4 +1,4 @@
-# 2024.12.23. CNN Programming_YunMinSeop
+# 2024.12.23. Lenet-5 Programming_YunMinSeop
 # Source: (오일석, 이진선), "파이썬으로 만드는 인공지능", 한빛아카데미, 2023.01.30, 264-266p
 import numpy as np
 import tensorflow as tf
