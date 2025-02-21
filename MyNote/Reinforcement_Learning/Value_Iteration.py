@@ -15,7 +15,7 @@ class agent:
         self.state = S[0]
         self.gamma = 0.9
         self.value_function = {s: 0 for s in S} # 최적 가치 딕셔너리
-        self.best_action = {s: 0 for s in S} # 최적 정책 딕셔너리
+        self.optimal_action = {s: 0 for s in S} # 최적 정책 딕셔너리
         self.action = None
         self.reward = None
         self.next_state = None
@@ -67,12 +67,12 @@ class agent:
                     # 최적 행동
                     if expected_value > max_value:
                         if s == 3:
-                            self.best_action[s] = '정지'
+                            self.optimal_action[s] = '정지'
                         else:
                             if a == -1:
-                                self.best_action[s] = '좌측 이동'
+                                self.optimal_action[s] = '좌측 이동'                              
                             else:
-                                self.best_action[s] = '우측 이동'
+                                self.optimal_action[s] = '우측 이동'
 
                     # 최적 가치 찾기
                     max_value = max(max_value, expected_value)
@@ -89,7 +89,7 @@ class agent:
                     self.value_function[s] = max_value
                 delta = max(delta, abs(v - self.value_function[s]))  # 가치 변화 확인
 
-        return self.value_function, self.best_action  # 수정된 가치 함수 반환
+        return self.value_function, self.optimal_action  # 수정된 가치 함수 반환
 
 
 
