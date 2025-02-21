@@ -1,6 +1,8 @@
-import math
 import numpy as np
 import random
+
+""" 상태 전이 확률 분포 = 모두 1.0 (결정론적 환경)
+    상태 1, 2 에서 좌or우로 이동할 확률 = 0.5 (랜덤 정책, 몬테카를로 방법)"""
 
 S = [0, 1, 2, 3] # 상태. 0, 1, 2, 3
 
@@ -30,7 +32,7 @@ class agent:
             self.action = A[1]; self.reward = R[0] # 오른쪽 이동 밖에 안되고 보상은 없다.
 
         elif self.state == S[1] or self.state == S[2]: # state = 1 or 2 일 때,
-            if p >= 0.5:    # 50%의 확률로 오른쪽이나 왼쪽으로 이동하며
+            if p >= 0.5:    # 0.5의 확률로 오른쪽이나 왼쪽으로 이동하며
                 self.action = A[0]
             else: self.action = A[1]
             
@@ -59,7 +61,7 @@ class agent:
                     if next_state not in S:  # 유효하지 않은 상태는 무시
                         continue
                     
-                    # Bellman 최적 방정식에 따른 가치 계산
+                    # 벨만 최적 방정식에 따른 가치 계산
                     expected_value = R[0] + self.gamma * self.value_function.get(next_state, 0) if next_state != 3 else R[1]
                     
                     # 최적 행동
