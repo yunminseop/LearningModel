@@ -41,21 +41,20 @@ class Agent:
 
         if action == 0:  # 왼쪽으로 이동
             next_states = [row * 4 + max(0, col - 1), row * 4 + min(3, col + 1)]  # 왼쪽, 오른쪽
-            weights = [0.8, 0.2]  # 왼쪽으로 갈 확률 80%, 오른쪽으로 갈 확률 20%
+            weights = [0.8, 0.2]  # 왼쪽 80%, 오른쪽 20%
 
         elif action == 1:  # 아래로 이동
             next_states = [min(3, row + 1) * 4 + col, max(3, row - 1) * 4 + col]  # 아래, 위
-            weights = [0.8, 0.2]  # 아래로 갈 확률 100%
+            weights = [0.8, 0.2]  # 아래 80%, 위 20%
 
         elif action == 2:  # 오른쪽으로 이동
             next_states = [row * 4 + min(3, col + 1), row * 4 + max(3, col + 1)]  # 오른쪽, 왼쪽
-            weights = [0.8, 0.2]  # 오른쪽으로 갈 확률 100%
+            weights = [0.8, 0.2]  # 오른쪽 80%, 왼쪽 20%
 
         elif action == 3:  # 위로 이동
             next_states = [max(0, row - 1) * 4 + col, max(0, row + 1) * 4 + col]  # 위, 아래
-            weights = [0.8, 0.2]  # 위로 갈 확률 100%
+            weights = [0.8, 0.2]  # 위 80%, 아래 80%
 
-        # weights와 population의 길이가 같아야 함
         next_state = random.choices(next_states, weights=weights, k=1)[0]
         return next_state
 
@@ -94,7 +93,7 @@ class Agent:
             self.alpha = max(0.00015, 1 / (0.001 * cnt + 1))
             self.epsilon = max(0.1, 1 - (cnt / self.n_episode))
             print(self.alpha, self.epsilon)
-            
+
             while curr_state != 15:
 
                 action = self.epsilon_greedy(curr_state)
