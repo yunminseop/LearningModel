@@ -22,7 +22,7 @@ class agent:
         self.value = None
     
     # 상태 전이 함수
-    def transfer(self):
+    def transition(self):
         p = random.random()
 
         if self.next_state is not None:
