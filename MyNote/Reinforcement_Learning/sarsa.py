@@ -9,8 +9,8 @@ class Agent:
         self.Q = {(s, a): 0 for s in S for a in A if s != 3}
         self.Q[(3, 0)] = 1  # 상태 3에서는 행동 0의 Q값을 1로 설정
         self.epsilon = 0.4  # 탐욕적인 정책을 위한 epsilon
-        self.gamma = 0.9  # 할인율
-        self.alpha = 0.1  # 학습률
+        self.gamma = 0.3  # 할인율
+        self.alpha = 0.9  # 학습률
 
     def epsilon_greedy(self, state):
         if state == 3:
