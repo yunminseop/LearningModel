@@ -1,106 +1,111 @@
 import numpy as np
 import random
 
-""" 상태 전이 확률 분포 = 모두 1.0 (결정론적 환경)
-    상태 1, 2 에서 좌or우로 이동할 확률 = 0.5 (랜덤 정책, 몬테카를로 방법)"""
+""" State transition probability distribution = 1.0 (deterministic env)
+    Probability of moving left or right from state 1 and state 2. = 0.5 (random policy, Monte Carlo method)"""
 
-S = [0, 1, 2, 3] # 상태. 0, 1, 2, 3
+S = [0, 1, 2, 3] # state. 0, 1, 2, 3
 
-A = [-1, 1] # 행동. 왼쪽 이동: -1, 오른쪽 이동: 1
+A = [-1, 1] # action. left: -1, right: 1
 
-R = [0, 1] # 보상. 상태 3에 도착 시 보상: 1, 나머지 보상: 0
+R = [0, 1] # reward. arrival at state 3 reward: 1, The others reward: 0
 
 class agent:
     def __init__(self):
         self.state = S[0]
         self.gamma = 0.9
-        self.value_function = {s: 0 for s in S} # 최적 가치 딕셔너리
-        self.optimal_action = {s: 0 for s in S} # 최적 정책 딕셔너리
+        self.value_function = {s: 0 for s in S} # optimal value dict
+        self.optimal_action = {s: 0 for s in S} # optimal policy dict
         self.action = None
         self.reward = None
         self.next_state = None
         self.value = None
     
-    # 상태 전이 함수
+    # state transition function
     def transition(self):
         p = random.random()
 
         if self.next_state is not None:
             self.state = self.next_state
 
-        if self.state == S[0]: # state = 0 일 때, 
-            self.action = A[1]; self.reward = R[0] # 오른쪽 이동 밖에 안되고 보상은 없다.
+        if self.state == S[0]: # if state = 0,
+            self.action = A[1]; self.reward = R[0] # only move right and no reward
 
-        elif self.state == S[1] or self.state == S[2]: # state = 1 or 2 일 때,
-            if p >= 0.5:    # 0.5의 확률로 오른쪽이나 왼쪽으로 이동하며
+        elif self.state == S[1] or self.state == S[2]: # if state = 1 or 2,
+            if p >= 0.5:    # move left or right with a probability of 0.5
                 self.action = A[0]
             else: self.action = A[1]
             
-            self.reward = R[0] # 보상은 없다.
+            self.reward = R[0] # and no reward
 
 
-        elif self.state == S[3]: # state = 3 일 때,
-            self.action = 0 # 이동하지 않으며 (예외 처리)
-            self.reward = R[1] # 보상이 있다.
+        elif self.state == S[3]: # if state = 3,
+            self.action = 0 # not move
+            self.reward = R[1] # reward = 1
 
         self.next_state = self.state + self.action
 
         return(self.state, self.action, self.reward, self.next_state)
 
-    # 가치 반복 알고리즘
+    # value iteration algorithm
     def value_iteration(self, threshold=1e-6):
         delta = float('inf')
         while delta > threshold:
             delta = 0
-            for s in S: # 각 상태에 대해서 반복문 실행
-                v = self.value_function[s]  # 현재 상태의 가치 함수 저장
+            for s in S: # For iteration per each state
+                v = self.value_function[s]  # record value function of curr state
                 max_value = float('-inf')
                 
-                for a in A: # 각 행동에 대해서 반복문 실행
+                for a in A: # For iteration per each action
                     next_state = s + a
-                    if next_state not in S:  # 유효하지 않은 상태는 무시
+                    if next_state not in S:  # ignore unvalid states
                         continue
                     
-                    # 벨만 최적 방정식에 따른 가치 계산
+                    # Bellman Optimality Equation
                     expected_value = R[0] + self.gamma * self.value_function.get(next_state, 0) if next_state != 3 else R[1]
                     
-                    # 최적 행동
+                    # optimal action(Policy)
                     if expected_value > max_value:
                         if s == 3:
-                            self.optimal_action[s] = '정지'
+                            self.optimal_action[s] = 'stop'
                         else:
                             if a == -1:
-                                self.optimal_action[s] = '좌측 이동'                              
+                                self.optimal_action[s] = 'move left'                              
                             else:
-                                self.optimal_action[s] = '우측 이동'
+                                self.optimal_action[s] = 'move right'
 
-                    # 최적 가치 찾기
+                    # find optimal value
                     max_value = max(max_value, expected_value)
-                    """ 최적 가치 함수란, 최적의 행동을 했을 때 이후 상태에서 얻을 수 있는 '기대 보상'을 반환함. 최적의 행동이 무엇인지는 모름. 왜냐?
-                        행동(-1과 1)을 순회하며 각 행동에 대한 기대 보상을 구하고, 이들 중 최대 보상을 max_value에 저장하기 때문에 이것만으로는 어떤 행동이 최적 행동인지는 알 수 없음.
-                        각 상태에서의 최적 행동을 알고 싶다면 각 행동에 대해 순회하는 동안 계산된 각각의 가치를 비교하여 높은 가치가 계산될 때마다 최적의 행동을 저장하면 됨."""
+                    """ The optimal value function returns the expected reward that can be obtained from future states when the optimal action is taken.
+                    However, we don't know what the optimal action is yet. This is because, as we iterate through the actions (such as -1 and 1),
+                    we calculate the expected rewards for each action and store the maximum reward in max_value.
+                    But, just by doing this, we can't determine which action is optimal.
+
+                    If we want to know the optimal action for each state,
+                    we can simply compare the values calculated for each action during the iteration.
+                    Each time a higher value is found, we can store the action that leads to this higher value as the optimal action."""
                     
 
                 
-                # 가치 함수 업데이트
+                # update value funcs
                 if s == 3:
                     self.value_function[s] = 1
                 else:
                     self.value_function[s] = max_value
-                delta = max(delta, abs(v - self.value_function[s]))  # 가치 변화 확인
+                delta = max(delta, abs(v - self.value_function[s]))
 
-        return self.value_function, self.optimal_action  # 수정된 가치 함수 반환
+        return self.value_function, self.optimal_action
 
 
 
 my_agent = agent()
 
-# 상태 전이
+# state transition
 while (my_agent.state != 3):
     res = my_agent.transfer()
-    print(f"상태: {res[0]}, 행동: {res[1]}, 보상: {res[2]}, 다음 상태: {res[3]}")
+    print(f"s: {res[0]}, a: {res[1]}, r: {res[2]}, s': {res[3]}")
 
-# 가치 반복
+# value iteration
 value_function = my_agent.value_iteration()
-print(f"최적 가치 함수: {value_function[0]}")
-print(f"최적 정책: {value_function[1]}")
+print(f"optimal value function: {value_function[0]}")
+print(f"optimal policy: {value_function[1]}")

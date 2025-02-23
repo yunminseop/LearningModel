@@ -4,56 +4,56 @@ import random
 import matplotlib.pyplot as plt
 
 
-S = list(range(0, 16))  # 상태
-A = [0, 1, 2, 3]  # 행동
+S = list(range(0, 16))  # state 0~15
+A = [0, 1, 2, 3]  # actions
 
 class Agent:
     def __init__(self):
         self.Q = {(s, a): 0 for s in S for a in A if s != 16}
         self.hole_state = [5, 7, 11, 12]
         self.n_episode = 1000000
-        self.Q[(15, -1)] = 1.0  # 목표 상태인 15에서는 -1의 행동을 하며 1.0의 가치를 가짐
+        self.Q[(15, -1)] = 1.0  # when state is 15, its action is -1(exception) and 1.0 Q
         self.epsilon = 0.4 
-        self.gamma = 0.99  # 할인율
-        self.alpha = 0.0  # 학습률
+        self.gamma = 0.99  # discount factor
+        self.alpha = 0.0  # learning rate
 
         self.total_state = {each:[] for each in S}
         self.optimal_policy = {each: 0 for each in S}
 
 
     def deterministic_transition(self, state, action):
-        row, col = divmod(state, 4)  # 현재 상태를 (row, col)로 변환
+        row, col = divmod(state, 4)  # Convert the current state to (row, col)
 
-        if action == 0:  # 왼쪽으로 이동
+        if action == 0:  # move left
             col = max(0, col - 1)
-        elif action == 1:  # 아래로 이동
+        elif action == 1:  # move down
             row = min(3, row + 1)
-        elif action == 2:  # 오른쪽으로 이동
+        elif action == 2:  # move right
             col = min(3, col + 1)
-        elif action == 3:  # 위로 이동
+        elif action == 3:  # move up
             row = max(0, row - 1)
 
-        return row * 4 + col  # 다시 상태 번호로 변환
+        return row * 4 + col  # convert the (row, col) into state num
     
 
     def stochastic_transition(self, state, action):
         row, col = divmod(state, 4)
 
-        if action == 0:  # 왼쪽으로 이동
-            next_states = [row * 4 + max(0, col - 1), row * 4 + min(3, col + 1)]  # 왼쪽, 오른쪽
-            weights = [0.8, 0.2]  # 왼쪽 80%, 오른쪽 20%
+        if action == 0:  # move left
+            next_states = [row * 4 + max(0, col - 1), row * 4 + min(3, col + 1)]  # left, right
+            weights = [0.8, 0.2]  # left 80%, right 20%
 
-        elif action == 1:  # 아래로 이동
-            next_states = [min(3, row + 1) * 4 + col, max(3, row - 1) * 4 + col]  # 아래, 위
-            weights = [0.8, 0.2]  # 아래 80%, 위 20%
+        elif action == 1:  # move down
+            next_states = [min(3, row + 1) * 4 + col, max(3, row - 1) * 4 + col]  # down, up
+            weights = [0.8, 0.2]  # down 80%, up 20%
 
-        elif action == 2:  # 오른쪽으로 이동
-            next_states = [row * 4 + min(3, col + 1), row * 4 + max(3, col + 1)]  # 오른쪽, 왼쪽
-            weights = [0.8, 0.2]  # 오른쪽 80%, 왼쪽 20%
+        elif action == 2:  # move right
+            next_states = [row * 4 + min(3, col + 1), row * 4 + max(3, col + 1)]  # right, left
+            weights = [0.8, 0.2]  # right 80%, left 20%
 
-        elif action == 3:  # 위로 이동
-            next_states = [max(0, row - 1) * 4 + col, max(0, row + 1) * 4 + col]  # 위, 아래
-            weights = [0.8, 0.2]  # 위 80%, 아래 80%
+        elif action == 3:  # move up
+            next_states = [max(0, row - 1) * 4 + col, max(0, row + 1) * 4 + col]  # up, down
+            weights = [0.8, 0.2]  # up 80%, down 80%
 
         next_state = random.choices(next_states, weights=weights, k=1)[0]
         return next_state
@@ -65,24 +65,23 @@ class Agent:
             return -1
         
         elif random.random() < self.epsilon:
-            return random.choice(A)  # 무작위 행동
+            return random.choice(A)  # randomly choose the action
 
         else:
             q_values = [self.Q.get((state, a), 0) for a in A]
             max_q = max(q_values)
-            return A[q_values.index(max_q)]  # Q값이 가장 큰 행동을 선택
+            return A[q_values.index(max_q)]  # choose the action that has the highest value(Q)
         
 
     def get_reward(self, state):
-        if state == 15:  # 목표 상태
+        if state == 15:  # goal state
             return 1
-        elif state in [5, 7, 11, 12]:  # 구멍 위치
+        elif state in [5, 7, 11, 12]:  # Holes number
             return -1
-        return 0  # 나머지 보상 없음
-
+        return 0  # The others have no reward
 
     def is_done(self, state):
-        return state == 15 or state in [5, 7, 11, 12]  # 목표 지점 or 구멍
+        return state == 15 or state in [5, 7, 11, 12]  # goal state or holes
 
 
     def Q_learning(self):
@@ -100,22 +99,22 @@ class Agent:
 
                 next_state = self.stochastic_transition(curr_state, action)
 
-                next_state = max(0, min(next_state, 15))  # 상태 0 이상, 15 이하로 제한
+                next_state = max(0, min(next_state, 15))  # limit state from 0 to 15
 
-                # 보상 설정
+                # get reward
                 reward = self.get_reward(next_state)
 
-                # Q값 업데이트
+                # update Q
                 old_q = self.Q[(curr_state, action)]
 
                 self.Q[(curr_state, action)] += self.alpha * (
                     reward + self.gamma * max(self.Q.get((next_state, a), 0) for a in A) - old_q
                 )
 
-                # 상태 갱신
+                # update only state
                 curr_state = next_state
 
-                if self.is_done(curr_state): # 다음 상태가 구멍이거나 목표 상태이면 이번 반복문은 여기서 종료
+                if self.is_done(curr_state): # if the next state is a goal or a hole, exit the while loop.
                     break
         
         del self.Q[(15,0)]
