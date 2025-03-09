@@ -11,10 +11,10 @@ class Agent:
     def __init__(self):
         self.Q = {(s, a): 0 for s in S for a in A if s != 16}
         self.hole_state = [5, 7, 11, 12]
-        self.n_episode = 1000000
+        self.n_episode = 100000
         self.Q[(15, -1)] = 1.0  # when state is 15, its action is -1(exception) and 1.0 Q
         self.epsilon = 0.4 
-        self.gamma = 0.99  # discount factor
+        self.gamma = 0.9  # discount factor
         self.alpha = 0.0  # learning rate
 
         self.total_state = {each:[] for each in S}
@@ -91,13 +91,12 @@ class Agent:
             cnt += 1
             self.alpha = max(0.00015, 1 / (0.001 * cnt + 1))
             self.epsilon = max(0.1, 1 - (cnt / self.n_episode))
-            print(self.alpha, self.epsilon)
 
             while curr_state != 15:
 
                 action = self.epsilon_greedy(curr_state)
 
-                next_state = self.stochastic_transition(curr_state, action)
+                next_state = self.deterministic_transition(curr_state, action)
 
                 next_state = max(0, min(next_state, 15))  # limit state from 0 to 15
 
@@ -121,6 +120,8 @@ class Agent:
         del self.Q[(15,1)]
         del self.Q[(15,2)]
         del self.Q[(15,3)]
+        for each in self.Q.items():
+            print(each)
 
 
     def show_optimal_policy(self):
