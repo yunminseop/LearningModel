@@ -44,11 +44,11 @@ class Agent:
             weights = [0.8, 0.2]  # left 80%, right 20%
 
         elif action == 1:  # move down
-            next_states = [min(3, row + 1) * 4 + col, max(3, row - 1) * 4 + col]  # down, up
+            next_states = [min(3, row + 1) * 4 + col, max(0, row - 1) * 4 + col]  # down, up
             weights = [0.8, 0.2]  # down 80%, up 20%
 
         elif action == 2:  # move right
-            next_states = [row * 4 + min(3, col + 1), row * 4 + max(3, col + 1)]  # right, left
+            next_states = [row * 4 + min(3, col + 1), row * 4 + max(0, col - 1)]  # right, left
             weights = [0.8, 0.2]  # right 80%, left 20%
 
         elif action == 3:  # move up
@@ -96,7 +96,7 @@ class Agent:
 
                 action = self.epsilon_greedy(curr_state)
 
-                next_state = self.deterministic_transition(curr_state, action)
+                next_state = self.stochastic_transition(curr_state, action)
 
                 next_state = max(0, min(next_state, 15))  # limit state from 0 to 15
 
@@ -133,10 +133,10 @@ class Agent:
 
         for item in self.total_state.items():
             match np.argmax(item[1]):
-                case 0: self.optimal_policy[item[0]] = "←"
-                case 1: self.optimal_policy[item[0]] = "↓"
-                case 2: self.optimal_policy[item[0]] = "→"
-                case 3: self.optimal_policy[item[0]] = "↑"
+                case 0: self.optimal_policy[item[0]] = "Left"
+                case 1: self.optimal_policy[item[0]] = "Down"
+                case 2: self.optimal_policy[item[0]] = "Right"
+                case 3: self.optimal_policy[item[0]] = "Up"
 
         print(self.optimal_policy)
 
