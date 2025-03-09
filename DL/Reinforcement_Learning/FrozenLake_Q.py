@@ -170,7 +170,7 @@ class Agent:
                     elif state == 15:
                         ax.text(j, i, "Goal", ha='center', va='center', fontsize=14, fontweight='bold')
                     else:
-                        ax.text(j, i, self.optimal_policy[state], ha='center', va='center', fontsize=16, fontweight='bold')
+                        ax.text(j, i, self.optimal_policy[state], ha='center', va='center', fontsize=14, fontweight='bold')
 
         ax.set_xticks([])
         ax.set_yticks([])
