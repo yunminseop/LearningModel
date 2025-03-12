@@ -48,10 +48,9 @@ def make_data(sequence_data, cut_size):
             if j < 2:
                 x_list.append(sequence_data[i+j])
             else:
-                y_list.append(sequence_data[i+j])
+                y_total_list.append(sequence_data[i+j])
 
         x_total_list.append(x_list)
-        y_total_list.append(y_list)
     
     x_total_list = np.asarray(x_total_list) # [[10, 20], [20, 30], [30, 40], ...]
     y_total_list = np.asarray(y_total_list) # [[30], [40], [50], ...]
@@ -68,6 +67,11 @@ mms_for_x = MinMaxScaler()
 mms_for_y = MinMaxScaler()
 
 print(X_train.shape)
+
+y_train = y_train.reshape(-1, 1)
+y_test = y_test.reshape(-1, 1)
+
+print(y_train.shape)
 
 scaled_X_train = mms_for_x.fit_transform(X_train)
 scaled_X_test = mms_for_x.transform(X_test)
