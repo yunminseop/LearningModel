@@ -6,7 +6,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.models import load_model
 from tensorflow.keras.losses import MeanSquaredError
 
-model = load_model("./MS/data/cartpole_by_DQN.h5", custom_objects={"mse": MeanSquaredError()})
+model = load_model("./cartpole_by_DQN.h5", custom_objects={"mse": MeanSquaredError()})
 
 env = gym.make("CartPole-v0")
 long_reward = 0

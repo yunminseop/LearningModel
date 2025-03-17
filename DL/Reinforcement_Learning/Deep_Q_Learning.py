@@ -13,14 +13,14 @@ class DeepQLearningAgent:
         self.gamma = 0.9 
         self.epsilon = 0.3 
         self.learning_rate = 0.001
-        self.n_episodes = 50
+        self.n_episodes = 500
         self.hole_state = [5, 7, 11, 12, 17, 22, 24, 29, 31, 36, 37, 39, 45, 50, 55, 60, 62, 69, 75, 81, 83, 86, 90, 93, 97]
         self.model = self.build_model()
 
     def build_model(self):
         model = tf.keras.Sequential([
-            tf.keras.layers.Dense(24, input_dim=self.state_size, activation='relu'),
-            tf.keras.layers.Dense(24, activation='relu'),
+            tf.keras.layers.Dense(24, input_dim=self.state_size),
+            tf.keras.layers.PReLU(),
             tf.keras.layers.Dense(self.action_size, activation='linear')
         ])
         model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(learning_rate=self.learning_rate))
@@ -47,7 +47,7 @@ class DeepQLearningAgent:
                 print(f"변경 전: {q_values}")
                 print(f"행동: {action}")
                 print(f"다음 상태: {next_state}")
-                target = reward + self.gamma * np.max(self.model.predict(np.identity(self.state_size)[next_state].reshape(1, -1), verbose=0))
+                target = reward + self.gamma * np.max(self.model.predict(np.identity(self.state_size)[next_state].reshape(1, -1), verbose=0)) if next_state != 99 else reward
                 q_values[0][action] = target
                 print(np.identity(self.state_size)[state].reshape(1, -1))
                 print(f"변경 후: {q_values}")
@@ -125,9 +125,9 @@ class DeepQLearningAgent:
 
 
     def get_reward(self, state):
-        if state == 99: return 1
+        if state == 99: return 10
         elif state in [5, 7, 11, 12, 17, 22, 24, 29, 31, 36, 37, 39, 45, 50, 55, 60, 62, 69, 75, 81, 83, 86, 90, 93, 97]: return -1
-        return 0
+        return 3
 
 agent = DeepQLearningAgent()
 agent.train()
