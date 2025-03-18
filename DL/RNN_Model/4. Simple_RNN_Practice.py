@@ -33,9 +33,9 @@ from tensorflow import keras
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import SimpleRNN, Dense
+from tensorflow.keras.layers import SimpleRNN, Dense, Bidirectional, LSTM
 
-train_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+train_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 window_size = 3
 
 def make_data(sequence_data, cut_size):
@@ -82,22 +82,34 @@ final_X_train = scaled_X_train.reshape(scaled_X_train.shape[0], scaled_X_train.s
 final_X_test = scaled_X_test.reshape(scaled_X_test.shape[0], scaled_X_test.shape[1], 1)
 
 model = Sequential([
-        SimpleRNN(10, activation="tanh", return_sequences=True, input_shape=(2, 1)),
-        SimpleRNN(30, activation="tanh", return_sequences=True),
-        SimpleRNN(15, activation="tanh"),
+        SimpleRNN(10, activation="relu", return_sequences=True, input_shape=(2, 1)),
+        # SimpleRNN(30, activation="tanh", return_sequences=True),
+        Bidirectional(LSTM(30, return_sequences=True)),
+        SimpleRNN(10, activation="relu"),
         Dense(1)
 ])
+
+print(model.summary())
 
 model.compile(optimizer="adam", loss="mse")
 model.fit(final_X_train, scaled_y_train, epochs=700, validation_split=0.2)
 
-test_input = np.asarray([110, 120])
-test_input = test_input.reshape(1, -1)
+test_input_1 = np.asarray([210, 220])
+test_input_1 = test_input_1.reshape(1, -1)
 
-print(test_input.shape)
+print(test_input_1.shape)
 
-scaled_test_input = mms_for_x.transform(test_input)
+test_input_2 = np.asarray([290, 300])
+test_input_2 = test_input_2.reshape(1, -1)
+
+scaled_test_input = mms_for_x.transform(test_input_1)
 final_test_input = scaled_test_input.reshape(1, 2, 1)
 predicted = model.predict(final_test_input)
 answer = mms_for_y.inverse_transform(predicted)
-print(f"predicted: {answer}")
+print(f"first predicted: {answer}")
+
+scaled_test_input2 = mms_for_x.transform(test_input_2)
+final_test_input2 = scaled_test_input2.reshape(1, 2, 1)
+predicted2 = model.predict(final_test_input2)
+answer2 = mms_for_y.inverse_transform(predicted2)
+print(f"second predicted: {answer2}")
