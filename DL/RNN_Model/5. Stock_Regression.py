@@ -6,11 +6,13 @@ from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import SimpleRNN, LSTM, Dense, Bidirectional
 from tensorflow.keras.losses import MeanSquaredError
+from tensorflow.keras.models import load_model
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
 import pandas as pd
-from tensorflow.keras.models import load_model
+from sklearn.metrics import r2_score
+
 
 
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
@@ -121,7 +123,6 @@ class Model:
         print(self.model.summary())
 
     def use_model(self):
-        # 모델 전체 불러오기
         print("모델 불러오는 중...")
         model = load_model('Finance_Model.h5')
         return model
@@ -145,4 +146,9 @@ test_label_it = y_scaler.inverse_transform(y_test)
 
 for p, l  in zip(test_pred_it, test_label_it):
     print(f"예측: {p}, 정답: {l}")
-#====================================================
+
+mse = mean_squared_error(y_test, test_pred)
+print("MSE:", mse)
+
+r2 = r2_score(y_test, test_pred)
+print("R² Score:", r2)
