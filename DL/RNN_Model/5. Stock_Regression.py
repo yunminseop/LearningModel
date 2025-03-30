@@ -59,27 +59,29 @@ class Model:
 
         x_train = []
         y_train = []
-        for i in range(len(simple_dataset)):
+        for i in range(len(simple_dataset) - input_dim):  # 입력 크기만큼 범위를 맞춘다.
             mini_x_list = []
             mini_y_list = []
             for j in range(input_dim):
-                try:
-                    mini_x_list.append(simple_dataset[i+j])
-                    if j == input_dim - 1:
-                        mini_y_list.append(simple_dataset[i+j+1])
-                except:
-                    pass
+                mini_x_list.append(simple_dataset[i+j])
+                if j == input_dim - 1:
+                    mini_y_list.append(simple_dataset[i+j+1])
             x_train.append(mini_x_list)
             y_train.append(mini_y_list)
 
-        x_train = np.array(x_train[:-7])
-        y_train = np.array(y_train[:-7])
+        x_train = np.array(x_train)
+        y_train = np.array(y_train)
 
-        X_train = pad_sequences(x_train, maxlen=7)
-        X_train, X_temp, y_train, y_temp = train_test_split(x_train, y_train, test_size=0.3, random_state=42)
-
-        # temp를 다시 valid + test로 분할
-        X_valid, X_test, y_valid, y_test = train_test_split(X_temp, y_temp, test_size=0.2, random_state=42)
+        # 시간 순서대로 데이터를 나눈다.
+        train_size = int(len(x_train) * 0.7)  # 70%를 훈련 데이터로
+        valid_size = int(len(x_train) * 0.2)  # 나머지 20%를 검증 데이터로
+        
+        X_train, X_valid_test = x_train[:train_size], x_train[train_size:]
+        y_train, y_valid_test = y_train[:train_size], y_train[train_size:]
+        
+        # valid를 다시 valid + test로 분할
+        X_valid, X_test = X_valid_test[:valid_size], X_valid_test[valid_size:]
+        y_valid, y_test = y_valid_test[:valid_size], y_valid_test[valid_size:]
 
         X_train = np.reshape(X_train, (-1, 7, 1))
         X_test = np.reshape(X_test, (-1, 7, 1))
@@ -134,21 +136,21 @@ model = Model()
 X_train, X_valid, X_test, y_train, y_valid, y_test, y_scaler = model.preprocess(df)
 print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape, X_test.shape, y_test.shape)
 
-# model.train(X_train, y_train)
+model.train(X_train, y_train)
 saved_model = model.use_model()
-# results = saved_model.evaluate(X_valid, y_valid)
-# print(results)
-model.summary()
+results = saved_model.evaluate(X_valid, y_valid)
+print(results)
+# model.summary()
 
-test_pred = saved_model.predict(X_test)
-test_pred_it = y_scaler.inverse_transform(test_pred)
-test_label_it = y_scaler.inverse_transform(y_test)
+# test_pred = saved_model.predict(X_test)
+# test_pred_it = y_scaler.inverse_transform(test_pred)
+# test_label_it = y_scaler.inverse_transform(y_test)
 
-for p, l  in zip(test_pred_it, test_label_it):
-    print(f"예측: {p}, 정답: {l}")
+# for p, l  in zip(test_pred_it, test_label_it):
+#     print(f"예측: {p}, 정답: {l}")
 
-mse = mean_squared_error(y_test, test_pred)
-print("MSE:", mse)
+# mse = mean_squared_error(y_test, test_pred)
+# print("MSE:", mse)
 
-r2 = r2_score(y_test, test_pred)
-print("R² Score:", r2)
+# r2 = r2_score(y_test, test_pred)
+# print("R² Score:", r2)
