@@ -7,9 +7,12 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import SimpleRNN, LSTM, Dense, Bidirectional
 from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.models import load_model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.metrics import r2_score
 
@@ -38,9 +41,9 @@ def load_df():
 class Model:
     def __init__(self):
         self.loss_func = MeanSquaredError()
-        self.epoch_size = 1000
-        self.batch_size = 8
-        self.activation = "relu"
+        self.epoch_size = 500
+        self.batch_size = 32
+        self.activation = "tanh"
         self.model = Sequential([
             SimpleRNN(10, activation=self.activation, return_sequences=True, input_shape=(7, 1)),
             Bidirectional(LSTM(20, return_sequences=True)),
@@ -59,7 +62,7 @@ class Model:
 
         x_train = []
         y_train = []
-        for i in range(len(simple_dataset) - input_dim):  # 입력 크기만큼 범위를 맞춘다.
+        for i in range(len(simple_dataset) - input_dim):
             mini_x_list = []
             mini_y_list = []
             for j in range(input_dim):
@@ -72,9 +75,8 @@ class Model:
         x_train = np.array(x_train)
         y_train = np.array(y_train)
 
-        # 시간 순서대로 데이터를 나눈다.
-        train_size = int(len(x_train) * 0.7)  # 70%를 훈련 데이터로
-        valid_size = int(len(x_train) * 0.2)  # 나머지 20%를 검증 데이터로
+        train_size = int(len(x_train) * 0.7)
+        valid_size = int(len(x_train) * 0.2)
         
         X_train, X_valid_test = x_train[:train_size], x_train[train_size:]
         y_train, y_valid_test = y_train[:train_size], y_train[train_size:]
@@ -110,10 +112,21 @@ class Model:
 
         return X_train_scaled, X_valid_scaled, X_test_scaled, y_train_scaled, y_valid_scaled, y_test_scaled, y_scaler
     
+    
     def train(self, X_train, y_train):
-        self.model.compile(optimizer='adam', loss=self.loss_func, metrics=["accuracy", "RootMeanSquaredError"])
-        self.model.fit(X_train, y_train, epochs=self.epoch_size, batch_size=self.batch_size)
+
+        early_stopping = EarlyStopping(
+            monitor='val_loss',  # 모니터링할 값 (검증 손실)
+            patience=80,         # 성능이 향상되지 않은 에폭 수
+            verbose=1,           # 훈련 중 조기 종료 메시지 출력 여부
+            restore_best_weights=True  # 조기 종료 시 가장 좋은 가중치를 복원
+        )
+            
+        optimizer = Adam(learning_rate=0.0001)
+        self.model.compile(optimizer=optimizer, loss=self.loss_func, metrics=["RootMeanSquaredError"])
+        hist = self.model.fit(X_train, y_train, epochs=self.epoch_size, batch_size=self.batch_size, validation_data=(X_valid, y_valid), callbacks=[early_stopping])
         self.model.save("Finance_Model.h5")
+        self.plot_loss(hist)
 
     def eval(self, X_test, y_test):
         y_pred = self.model.predict(X_test)
@@ -128,6 +141,27 @@ class Model:
         print("모델 불러오는 중...")
         model = load_model('Finance_Model.h5')
         return model
+    
+    def plot_loss(self, history):
+        train_loss = history.history['loss']
+        val_loss = history.history['val_loss']
+
+        # 그래프 그리기
+        plt.figure(figsize=(10, 6))
+
+        # loss 그래프 그리기
+        plt.plot(train_loss, label='Train Loss', color='blue')
+        plt.plot(val_loss, label='Validation Loss', color='cyan')
+
+
+        # 레이블과 타이틀 추가
+        plt.xlabel('Epochs')
+        plt.ylabel('Value')
+        plt.title('Loss and Accuracy During Training')
+        plt.legend()
+
+        # 그래프 출력
+        plt.show()
 
 
 url = "/home/ms/ws/git_ws/LearningModel/DL/RNN_Model/samsung_stock.csv"
@@ -136,21 +170,21 @@ model = Model()
 X_train, X_valid, X_test, y_train, y_valid, y_test, y_scaler = model.preprocess(df)
 print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape, X_test.shape, y_test.shape)
 
-model.train(X_train, y_train)
+# model.train(X_train, y_train)
 saved_model = model.use_model()
-results = saved_model.evaluate(X_valid, y_valid)
-print(results)
+# results = saved_model.evaluate(X_valid, y_valid)
+# print(results)
 # model.summary()
 
-# test_pred = saved_model.predict(X_test)
-# test_pred_it = y_scaler.inverse_transform(test_pred)
-# test_label_it = y_scaler.inverse_transform(y_test)
+test_pred = saved_model.predict(X_test)
+test_pred_it = y_scaler.inverse_transform(test_pred)
+test_label_it = y_scaler.inverse_transform(y_test)
 
-# for p, l  in zip(test_pred_it, test_label_it):
-#     print(f"예측: {p}, 정답: {l}")
+for p, l  in zip(test_pred_it, test_label_it):
+    print(f"예측: {p}, 정답: {l}")
 
-# mse = mean_squared_error(y_test, test_pred)
-# print("MSE:", mse)
+mse = mean_squared_error(y_test, test_pred)
+print("MSE:", mse)
 
-# r2 = r2_score(y_test, test_pred)
-# print("R² Score:", r2)
+r2 = r2_score(y_test, test_pred)
+print("R² Score:", r2)
