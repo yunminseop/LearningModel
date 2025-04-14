@@ -116,10 +116,10 @@ class Model:
     def train(self, X_train, y_train):
 
         early_stopping = EarlyStopping(
-            monitor='val_loss',  # 모니터링할 값 (검증 손실)
-            patience=80,         # 성능이 향상되지 않은 에폭 수
-            verbose=1,           # 훈련 중 조기 종료 메시지 출력 여부
-            restore_best_weights=True  # 조기 종료 시 가장 좋은 가중치를 복원
+            monitor='val_loss',
+            patience=80,
+            verbose=1,  
+            restore_best_weights=True 
         )
             
         optimizer = Adam(learning_rate=0.0001)
@@ -174,7 +174,7 @@ print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape, X_test.shape, 
 saved_model = model.use_model()
 # results = saved_model.evaluate(X_valid, y_valid)
 # print(results)
-# model.summary()
+model.summary()
 
 test_pred = saved_model.predict(X_test)
 test_pred_it = y_scaler.inverse_transform(test_pred)
