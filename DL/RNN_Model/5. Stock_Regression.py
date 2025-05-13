@@ -97,20 +97,19 @@ class Model:
         X_valid_scaled = X_scaler.transform(X_valid_reshaped)
         X_test_scaled = X_scaler.transform(X_test_reshaped)
 
-        y_scaler = MinMaxScaler(feature_range=(0, 1))
-        y_train_scaled = y_scaler.fit_transform(y_train)
-        y_valid_scaled = y_scaler.transform(y_valid)
-        y_test_scaled = y_scaler.transform(y_test)
+        # y_train_scaled = X_scaler.transform(y_train)
+        # y_valid_scaled = X_scaler.transform(y_valid)
+        # y_test_scaled = X_scaler.transform(y_test)
 
         X_train_scaled = X_train_scaled.astype("float32")
         X_valid_scaled = X_valid_scaled.astype("float32")
         X_test_scaled = X_test_scaled.astype("float32")
-        y_train_scaled = y_train_scaled.astype("float32")
-        y_valid_scaled = y_valid_scaled.astype("float32")
-        y_test_scaled = y_test_scaled.astype("float32")
+        # y_train_scaled = y_train_scaled.astype("float32")
+        # y_valid_scaled = y_valid_scaled.astype("float32")
+        # y_test_scaled = y_test_scaled.astype("float32")
 
 
-        return X_train_scaled, X_valid_scaled, X_test_scaled, y_train_scaled, y_valid_scaled, y_test_scaled, y_scaler
+        return X_train_scaled, X_valid_scaled, X_test_scaled, y_train, y_valid, y_test, X_scaler
     
     
     def train(self, X_train, y_train):
@@ -125,7 +124,7 @@ class Model:
         optimizer = Adam(learning_rate=0.0001)
         self.model.compile(optimizer=optimizer, loss=self.loss_func, metrics=["RootMeanSquaredError"])
         hist = self.model.fit(X_train, y_train, epochs=self.epoch_size, batch_size=self.batch_size, validation_data=(X_valid, y_valid), callbacks=[early_stopping])
-        self.model.save("Finance_Model.h5")
+        self.model.save("Finance_Model2.keras")
         self.plot_loss(hist)
 
     def eval(self, X_test, y_test):
@@ -139,7 +138,7 @@ class Model:
 
     def use_model(self):
         print("모델 불러오는 중...")
-        model = load_model('Finance_Model.h5')
+        model = load_model('Finance_Model2.h5')
         return model
     
     def plot_loss(self, history):
@@ -167,24 +166,24 @@ class Model:
 url = "/home/ms/ws/git_ws/LearningModel/DL/RNN_Model/samsung_stock.csv"
 df = load_df()
 model = Model()
-X_train, X_valid, X_test, y_train, y_valid, y_test, y_scaler = model.preprocess(df)
+X_train, X_valid, X_test, y_train, y_valid, y_test, X_scaler = model.preprocess(df)
 print(X_train.shape, y_train.shape, X_valid.shape, y_valid.shape, X_test.shape, y_test.shape)
 
-# model.train(X_train, y_train)
-saved_model = model.use_model()
+model.train(X_train, y_train)
+# saved_model = model.use_model()
 # results = saved_model.evaluate(X_valid, y_valid)
 # print(results)
 model.summary()
 
-test_pred = saved_model.predict(X_test)
-test_pred_it = y_scaler.inverse_transform(test_pred)
-test_label_it = y_scaler.inverse_transform(y_test)
+# test_pred = saved_model.predict(X_test)
+# test_pred_it = X_scaler.inverse_transform(test_pred)
+# test_label_it = X_scaler.inverse_transform(y_test)
 
-for p, l  in zip(test_pred_it, test_label_it):
-    print(f"예측: {p}, 정답: {l}")
+# for p, l  in zip(test_pred_it, test_label_it):
+#     print(f"예측: {p}, 정답: {l}")
 
-mse = mean_squared_error(y_test, test_pred)
-print("MSE:", mse)
+# mse = mean_squared_error(y_test, test_pred)
+# print("MSE:", mse)
 
-r2 = r2_score(y_test, test_pred)
-print("R² Score:", r2)
+# r2 = r2_score(y_test, test_pred)
+# print("R² Score:", r2)
