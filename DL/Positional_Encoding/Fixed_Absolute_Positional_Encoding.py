@@ -6,14 +6,15 @@ import matplotlib.pyplot as plt
 class Divider: # 문장을 입력받아 단어 단위로 반환하는 클래스
     def __init__(self, sentence): # 문장 입력
         self.word = sentence.split(' ')
+        
     def retIndex(self):
         return self.word # 단어 출력
     
 class PE:
     def __init__(self, d_model, Pos): # 모델 차원, 단어 위치
-        self.degree = np.linspace(0,360,361)
         self.d_model = d_model
         self.__Pos = Pos
+        
     def get_value(self):
         dimension_list = []
         for i in range(self.d_model):
